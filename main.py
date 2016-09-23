@@ -29,7 +29,7 @@ def main():
 # it will try and turn the response into a question
 # if it can't do that, then it will respond with "hmmm" or "yes, yes continue"
 def brain(inputStr, n):
-    inputStr = cleanStr(inputStr)
+    outputStr = inputStr.strip()
 
     # detect end of conversation
     if(isEndConversation(inputStr) == 1):
@@ -61,29 +61,48 @@ def brain(inputStr, n):
         return (newTopic(), 0)
 
     # do some verb stuff
+# will pick out inflected verbs hopefully
+#    regexf1 = r" (will|(am|is|are) going to) (\w+) "
+#    regexf2 = r" will have (\w+)ed "
+#    regexf3 = r" will (be|have been) (\w+)ing "
+#
+#    regexpa1 = r"(had)? (\w+)ed "
+#    regexpa2 = r"((were|was)|had been) (\w+)ing "
+#
+#    regexpr1 = r" (\w+)s "
+#    regexpr2 = r" (have|has) (\w+) "
+#    regexpr3 = r" ((am|are|is)|(has|have) been) (\w+)ing "
+#    regexpr3 = r" (am|are|is) (\w+) "
+
+#    regexhab = r" (used to|would always) (\w+) "
+#    regexfip = r" (was|were) going to (\w+) "
+
+#    verbList = re.findall(regex, word)
 
     # turn the answer back on them in the form of a question
+    if(len(re.findall(r"^I (.+)(\.|\?|\!|)$", inputStr)) > 0):
+        return (re.sub(r"^I (.+)(\.|\?|\!|)$", "You \1\?", inputStr, re.I), 0)
+    if(len(re.findall(r"^You (.+)(\.|\?|\!|)$", inputStr)) > 0):
+        return (re.sub(r"^You (.+)(\.|\?|\!|)$", "I \1\?", inputStr, re.I), 0)
+    if(len(re.findall(r"^My (.+)(\.|\?|\!|)$", inputStr)) > 0):
+        return (re.sub(r"^My (.+)(\.|\?|\!|)$", "Your \1\?", inputStr, re.I), 0)
+    if(len(re.findall(r"^Your (.+)(\.|\?|\!|)$", inputStr)) > 0):
+        return (re.sub(r"^Your (.+)(\.|\?|\!|)$", "My \1\?", inputStr, re.I), 0)
 
     # pick out some keywords and ask about it
+    family = re.findall(r"(^| )((((step|grand|half)(\-| |)|)(sister|brother|father|mother)|(girl|boy|best |)friend|(grand|)parent|cousin|aunt|uncle|roommate)(s|))($| )",inputStr, re.I)
+    if(len(family) > 0):
+        return ("Your " + family[0][1] + "? Tell me a little about them.", 0)
+
+    becauseStuff = re.findall(r" (because .+)(\.|\?|\!|)$", inputStr, re.I)
+    if(len(becauseStuff) > 0):
+        return (becauseStuff[0][0].capitalize() + "? Can you think of any other reasons?", 0)
 
     # if all else fails, fluff it up
     return (fluff(), 0)
 
-
-# cleans string
-def cleanStr(inputStr):
-    outputStr = inputStr.strip()
-    return outputStr
-
-
-# splits sentence into words
-def splitStr(inputStr):
-    outputList = inputStr.split(" ")  # Split sentence into words at spaces
-    return outputList
-
-
 def isEndConversation(inputStr):
-    if (len(re.findall(r"(quit|end|stop)", inputStr, re.I)) > 0):
+    if (len(re.findall(r"(^| )(quit|end|stop)($| )", inputStr, re.I)) > 0):
         return 1
     else:
         return 0
@@ -117,32 +136,10 @@ def isNotEnglish(inputStr):
 
 
 def isRude(inputStr):
-    if(len(re.findall(r"(^| )(fuck(er|ing|)|cunt|ass|shit|bitch|bastard|damn|hell|whore|slut|jizz|cock|dyke|dick)($| )", inputStr, re.I)) > 0):
+    if(len(re.findall(r"(^| )(fuck(e|ing|)|cunt|ass|shit|bitch|bastard|damn|hell|whore|slut|jizz|cock|dyke|dick)($| )", inputStr, re.I)) > 0):
         return 1
     else:
         return 0
-
-
-# will pick out inflected verbs hopefully
-def findVerb(intputStr):
-    regexf1 = r" (will|(am|is|are) going to) (\w+) "
-    regexf2 = r" will have (\w+)ed "
-    regexf3 = r" will (be|have been) (\w+)ing "
-
-    regexpa1 = r"(had)? (\w+)ed "
-    regexpa2 = r"((were|was)|had been) (\w+)ing "
-
-    regexpr1 = r" (\w+)s "
-    regexpr2 = r" (have|has) (\w+) "
-    regexpr3 = r" ((am|are|is)|(has|have) been) (\w+)ing "
-    regexpr3 = r" (am|are|is) (\w+) "
-
-    regexhab = r" (used to|would always) (\w+) "
-    regexfip = r" (was|were) going to (\w+) "
-
-    verbList = re.findall(regex, word)
-    return pos
-
 
 # performs a rorshach test (reponses aren't actually analyzed)
 def rorschachTest():
@@ -320,7 +317,7 @@ def change():
                    "let's move on to " + random.choice(changeList3),
                    "let's talk about " + random.choice(changeList3)]
 
-    changeList1 = ["I think we've heard enough about this topic.",
+    changeList1 = ["I think we've heard enough, ", + random.choice(changeList2),
                    "I'm going to stop you right there, " + random.choice(changeList2),
                    "Let me cut you off right there, " + random.choice(changeList2),
                    "Let me stop you right there, " + random.choice(changeList2),
